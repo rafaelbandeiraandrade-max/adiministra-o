@@ -3,9 +3,15 @@ package com.ceharp.ponto
 import android.app.Application
 import android.content.Context
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onFirst
-import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -14,7 +20,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.ceharp.ponto.data.DiaRegistro
 import com.ceharp.ponto.data.TipoDia
 import com.ceharp.ponto.ui.PontoTheme
-import com.ceharp.ponto.ui.nomeDoMes
+import com.ceharp.ponto.ui.PainelDia
 import com.ceharp.ponto.ui.relogioAoVivo
 import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
 import com.github.takahirom.roborazzi.captureScreenRoboImage
@@ -64,14 +70,17 @@ class CapturaTelasTest {
 
     private fun avancar() = regra.waitForIdle()
 
-    @Test
-    fun capturarTelas() {
+    private fun prepararDados(): Pair<PontoViewModel, LocalDate?> {
         val app = ApplicationProvider.getApplicationContext<Application>()
         app.getSharedPreferences("ponto", Context.MODE_PRIVATE).edit().clear().commit()
         val vm = PontoViewModel(app)
-        val diaParaAbrir = preencherExemplo(vm)
-
         relogioAoVivo = false
+        return vm to preencherExemplo(vm)
+    }
+
+    @Test
+    fun capturarTelas() {
+        val (vm, _) = prepararDados()
         regra.setContent { PontoTheme { AppPonto(vm) } }
         avancar()
         captureScreenRoboImage("telas-geradas/1-hoje.png")
@@ -84,18 +93,33 @@ class CapturaTelasTest {
         avancar()
         captureScreenRoboImage("telas-geradas/3-calendario-resumo.png")
 
-        if (diaParaAbrir != null) {
-            regra.onNodeWithText(nomeDoMes(YearMonth.now())).performScrollTo()
-            avancar()
-            regra.onAllNodesWithText(diaParaAbrir.dayOfMonth.toString()).onFirst().performClick()
-            avancar()
-            captureScreenRoboImage("telas-geradas/4-editar-dia.png")
-            regra.onNodeWithText("Cancelar").performClick()
-            avancar()
-        }
-
         regra.onNodeWithText("Ajustes").performClick()
         avancar()
         captureScreenRoboImage("telas-geradas/5-ajustes.png")
+    }
+
+    /** A janela real (Dialog) não fica ociosa no Robolectric; o mesmo painel é desenhado sobre o calendário. */
+    @Test
+    fun capturarEdicaoDoDia() {
+        val (vm, dia) = prepararDados()
+        val data = dia ?: LocalDate.now()
+        regra.setContent {
+            PontoTheme {
+                Box {
+                    AppPonto(vm, abaInicial = 1)
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.6f))
+                            .padding(horizontal = 24.dp, vertical = 48.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        PainelDia(vm, data, onFechar = {})
+                    }
+                }
+            }
+        }
+        avancar()
+        captureScreenRoboImage("telas-geradas/4-editar-dia.png")
     }
 }

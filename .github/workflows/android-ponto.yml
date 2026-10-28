@@ -24,7 +24,7 @@ jobs:
       - name: Testes e build do APK
         run: |
           chmod +x gradlew
-          ./gradlew testDebugUnitTest assembleDebug --stacktrace
+          ./gradlew testDebugUnitTest --tests "com.ceharp.ponto.data.*" assembleDebug --stacktrace
       - uses: actions/upload-artifact@v4
         with:
           name: controle-de-ponto-apk

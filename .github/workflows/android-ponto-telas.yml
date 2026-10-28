@@ -29,7 +29,9 @@ jobs:
           chmod +x gradlew
           ./gradlew recordRoborazziDebug --tests "com.ceharp.ponto.CapturaTelasTest" --stacktrace
       - name: Salvar capturas na pasta telas/
+        if: always()
         run: |
+          ls app/telas-geradas/*.png >/dev/null 2>&1 || exit 0
           rm -rf telas && mkdir telas
           cp app/telas-geradas/*.png telas/
           git config user.name "github-actions[bot]"

@@ -8,20 +8,22 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.Surface
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,6 +37,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.ceharp.ponto.PontoViewModel
 import com.ceharp.ponto.data.Calculo
 import com.ceharp.ponto.data.DiaRegistro
@@ -57,6 +60,14 @@ private fun escolherHora(contexto: Context, inicial: LocalTime, aoEscolher: (Loc
 /** Edição manual de um dia: ajustar/incluir/remover batidas, tipo do dia e observação. */
 @Composable
 fun DialogoDia(vm: PontoViewModel, data: LocalDate, onFechar: () -> Unit) {
+    Dialog(onDismissRequest = onFechar) {
+        PainelDia(vm, data, onFechar)
+    }
+}
+
+/** Conteúdo da janela de edição do dia (separado para poder ser exibido nas capturas de tela). */
+@Composable
+fun PainelDia(vm: PontoViewModel, data: LocalDate, onFechar: () -> Unit) {
     val contexto = LocalContext.current
     val original = vm.dia(data)
     var batidas by remember(data) { mutableStateOf(original.batidas.sorted()) }
@@ -67,12 +78,18 @@ fun DialogoDia(vm: PontoViewModel, data: LocalDate, onFechar: () -> Unit) {
     val trabalhado = Calculo.minutosTrabalhados(rascunho)
     val esperado = Calculo.minutosEsperados(data, tipo, vm.config)
 
-    AlertDialog(
-        onDismissRequest = onFechar,
-        title = { Text(dataPorExtenso(data), style = MaterialTheme.typography.titleMedium) },
-        text = {
+    Surface(
+        shape = RoundedCornerShape(28.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        tonalElevation = 6.dp,
+    ) {
+        Column(Modifier.padding(24.dp)) {
+            Text(dataPorExtenso(data), style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(16.dp))
             Column(
-                Modifier.verticalScroll(rememberScrollState()),
+                Modifier
+                    .weight(1f, fill = false)
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text("Batidas", fontWeight = FontWeight.SemiBold)
@@ -144,15 +161,18 @@ fun DialogoDia(vm: PontoViewModel, data: LocalDate, onFechar: () -> Unit) {
                     if (trabalhado >= esperado) CoresStatus.ok else CoresStatus.falta,
                 )
             }
-        },
-        confirmButton = {
-            TextButton(onClick = {
-                vm.atualizar(rascunho)
-                onFechar()
-            }) { Text("Salvar") }
-        },
-        dismissButton = {
-            TextButton(onClick = onFechar) { Text("Cancelar") }
-        },
-    )
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                TextButton(onClick = onFechar) { Text("Cancelar") }
+                TextButton(onClick = {
+                    vm.atualizar(rascunho)
+                    onFechar()
+                }) { Text("Salvar") }
+            }
+        }
+    }
 }

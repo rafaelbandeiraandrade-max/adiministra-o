@@ -52,8 +52,8 @@ private val abas = listOf(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppPonto(vm: PontoViewModel = viewModel()) {
-    var aba by rememberSaveable { mutableIntStateOf(0) }
+fun AppPonto(vm: PontoViewModel = viewModel(), abaInicial: Int = 0) {
+    var aba by rememberSaveable { mutableIntStateOf(abaInicial) }
     Scaffold(
         topBar = { TopAppBar(title = { Text(abas[aba].titulo) }) },
         bottomBar = {
