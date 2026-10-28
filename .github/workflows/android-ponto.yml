@@ -1,0 +1,31 @@
+name: App Android - Controle de Ponto
+
+on:
+  push:
+    paths:
+      - "android-ponto/**"
+      - ".github/workflows/android-ponto.yml"
+  workflow_dispatch:
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: android-ponto
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Testes e build do APK
+        run: |
+          chmod +x gradlew
+          ./gradlew testDebugUnitTest --tests "com.ceharp.ponto.data.*" assembleDebug --stacktrace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: controle-de-ponto-apk
+          path: android-ponto/app/build/outputs/apk/debug/*.apk
