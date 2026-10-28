@@ -31,7 +31,7 @@ import java.time.YearMonth
 @OptIn(ExperimentalRoborazziApi::class)
 @RunWith(AndroidJUnit4::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(sdk = [34], qualifiers = "w400dp-h860dp-xxhdpi-night")
+@Config(sdk = [34], qualifiers = "w400dp-h860dp-night-xxhdpi")
 class CapturaTelasTest {
 
     @get:Rule
