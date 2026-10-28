@@ -15,6 +15,7 @@ import com.ceharp.ponto.data.DiaRegistro
 import com.ceharp.ponto.data.TipoDia
 import com.ceharp.ponto.ui.PontoTheme
 import com.ceharp.ponto.ui.nomeDoMes
+import com.ceharp.ponto.ui.relogioAoVivo
 import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
 import com.github.takahirom.roborazzi.captureScreenRoboImage
 import org.junit.Rule
@@ -61,10 +62,7 @@ class CapturaTelasTest {
         return diaParaAbrir
     }
 
-    private fun avancar() {
-        regra.mainClock.advanceTimeBy(600)
-        regra.waitForIdle()
-    }
+    private fun avancar() = regra.waitForIdle()
 
     @Test
     fun capturarTelas() {
@@ -73,8 +71,7 @@ class CapturaTelasTest {
         val vm = PontoViewModel(app)
         val diaParaAbrir = preencherExemplo(vm)
 
-        // O relógio da tela Hoje atualiza em loop; o tempo do teste avança manualmente.
-        regra.mainClock.autoAdvance = false
+        relogioAoVivo = false
         regra.setContent { PontoTheme { AppPonto(vm) } }
         avancar()
         captureScreenRoboImage("telas-geradas/1-hoje.png")

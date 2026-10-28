@@ -48,12 +48,15 @@ import java.time.format.DateTimeFormatter
 
 private val formatoRelogio = DateTimeFormatter.ofPattern("HH:mm:ss")
 
+/** Desligado nos testes de captura de tela, onde o loop do relógio impediria a UI de ficar ociosa. */
+internal var relogioAoVivo = true
+
 @Composable
 fun TelaHoje(vm: PontoViewModel) {
     val contexto = LocalContext.current
     var agora by remember { mutableStateOf(LocalDateTime.now()) }
     LaunchedEffect(Unit) {
-        while (true) {
+        while (relogioAoVivo) {
             agora = LocalDateTime.now()
             delay(1000)
         }
